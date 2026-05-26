@@ -11,8 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-builder.Configuration["urls"] = $"http://0.0.0.0:{port}";
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
 
 builder.Services.AddControllers();
