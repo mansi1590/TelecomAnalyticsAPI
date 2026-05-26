@@ -110,4 +110,6 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 app.MapGet("/", () => "TelecomAnalyticsAPI is running");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 app.Run();
