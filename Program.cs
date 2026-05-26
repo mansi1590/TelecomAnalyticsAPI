@@ -45,7 +45,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 var connectionString =
-    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
