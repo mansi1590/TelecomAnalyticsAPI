@@ -11,9 +11,9 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Railway port binding - must be BEFORE builder.Build()
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+builder.Configuration["urls"] = $"http://0.0.0.0:{port}";
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
