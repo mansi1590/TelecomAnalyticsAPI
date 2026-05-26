@@ -44,16 +44,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
-if (string.IsNullOrEmpty(databaseUrl))
-{
-    throw new Exception("DATABASE_URL is not set");
-}
-
-var uri = new Uri(databaseUrl);
-
-var userInfo = uri.UserInfo.Split(':');
 
 var connectionString =
     Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
