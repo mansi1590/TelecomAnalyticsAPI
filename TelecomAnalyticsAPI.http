@@ -1,0 +1,6 @@
+@TelecomAnalyticsAPI_HostAddress = http://localhost:5181
+
+GET {{TelecomAnalyticsAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
