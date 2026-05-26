@@ -1,6 +1,6 @@
 using TelecomAnalyticsAPI.Models;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;             
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using TelecomAnalyticsAPI.Data;
@@ -9,14 +9,15 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Railway port binding - must be BEFORE builder.Build()
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -56,7 +57,9 @@ if (string.IsNullOrEmpty(connectionString))
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
+
 var jwtKey = builder.Configuration["Jwt:Key"];
+
 if (string.IsNullOrEmpty(jwtKey))
 {
     throw new InvalidOperationException("JWT signing key is not configured. Please set 'Jwt:Key' in your configuration.");
@@ -66,7 +69,8 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
+})
+.AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -77,39 +81,39 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAnalystRole", policy => policy.RequireRole("Analyst"));
-}); 
+});
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", corsBuilder =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        corsBuilder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
     });
 });
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
-app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/", () => "TelecomAnalyticsAPI is running");
 app.MapControllers();
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
-app.MapGet("/", () => "TelecomAnalyticsAPI is running");
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 app.Run();
